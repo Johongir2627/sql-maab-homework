@@ -6,11 +6,10 @@ use Northwind
 
 --Q32
 select Customers.CustomerID, Customers.CompanyName, Orders.OrderID, SUM(Quantity*UnitPrice) as TotalOrderAmount
-from Customers join	Orders on Orders.CustomerID	= Customers.CustomerID join	OrderDetails on	Orders.OrderID = OrderDetails.OrderID
+from Customers join Orders on Orders.CustomerID	= Customers.CustomerID join OrderDetails on Orders.OrderID = OrderDetails.OrderID
 where OrderDate	>= '20160101' and OrderDate < '20170101'
 group by Customers.CustomerID, Customers.CompanyName, Orders.Orderid 
-having	sum(Quantity * UnitPrice) > 10000
-order by TotalOrderAmount DESC
+having	sum(Quantity * UnitPrice) > 10000 order by TotalOrderAmount DESC
 
 
 
@@ -19,10 +18,9 @@ order by TotalOrderAmount DESC
 
  --Q33
 select	Customers.CustomerID, Customers.CompanyName, Orders.OrderID, SUM(Quantity * UnitPrice) as TotalOrderAmount from Customers join
-Orders	on	Orders.CustomerID = Customers.CustomerID join OrderDetails on Orders.OrderID = OrderDetails.OrderID 
-where OrderDate	>=	'20160101' and	OrderDate < '20170101' 
-group by	Customers.CustomerID, Customers.CompanyName, Orders.Orderid	
-having	sum(Quantity * UnitPrice) > 15000 order	by	TotalOrderAmount desc;
+Orders	on Orders.CustomerID = Customers.CustomerID join OrderDetails on Orders.OrderID = OrderDetails.OrderID 
+where OrderDate	>= '20160101' and OrderDate < '20170101' group by Customers.CustomerID, Customers.CompanyName, Orders.Orderid	
+having sum(Quantity * UnitPrice) > 15000 order by TotalOrderAmount desc
 
 
 
@@ -30,33 +28,25 @@ having	sum(Quantity * UnitPrice) > 15000 order	by	TotalOrderAmount desc;
 
 
  --Q34
-select	Customers.CustomerID, Customers.CompanyName, TotalsWithoutDiscount	= SUM(Quantity * UnitPrice), TotalsWithDiscount	= SUM(Quantity * UnitPrice * (1-Discount))
-From	Customers join Orders	on	Orders.CustomerID	=	Customers.CustomerID
-join	OrderDetails	on	Orders.OrderID	=	OrderDetails.OrderID
-where	OrderDate >= '20160101' and	OrderDate <	'20170101'
-group	by	Customers.CustomerID, Customers.CompanyName	
-having	sum(Quantity*UnitPrice*(1-Discount)) > 10000
-order by TotalsWithDiscount	DESC;
+select Customers.CustomerID, Customers.CompanyName, TotalsWithoutDiscount = SUM(Quantity * UnitPrice), TotalsWithDiscount = SUM(Quantity * UnitPrice * (1-Discount))
+from Customers join Orders on Orders.CustomerID	= Customers.CustomerID join OrderDetails on Orders.OrderID = OrderDetails.OrderID
+where OrderDate >= '20160101' and OrderDate < '20170101' group by Customers.CustomerID, Customers.CompanyName having sum(Quantity*UnitPrice*(1-Discount)) > 10000
+order by TotalsWithDiscount DESC;
 
 
 
 
 
  --Q35
-select EmployeeID, OrderID, OrderDate from	Orders 
-where OrderDate = EOMONTH(OrderDate)
-order	by EmployeeID, OrderID
-
+select EmployeeID, OrderID, OrderDate from Orders where OrderDate = EOMONTH(OrderDate) order by EmployeeID, OrderID
 
 
 
 
 
 --Q36
-select top 10 Orders.OrderID, count(*) from Orders 
-join OrderDetails on Orders.OrderID = OrderDetails.OrderID
-group by Orders.OrderID order by COUNT(*) desc
-
+select top 10 Orders.OrderID, count(*) from Orders join OrderDetails on Orders.OrderID = OrderDetails.OrderID 
+group by Orders.OrderID order by count(*) desc
 
 
 
@@ -68,13 +58,14 @@ select top 2 percent orderid from Orders order by NEWID()
 
 
 --Q38
-select orderid from OrderDetails where Quantity >= 60 group by OrderID, Quantity having COUNT(*)>1
+select orderid from OrderDetails where Quantity >= 60 group by OrderID, Quantity having count(*)>1
 
 
 
 
 --39
-;with PotDup as (select orderid from OrderDetails 
+;with PotDup as 
+(select orderid from OrderDetails 
 where Quantity>=60 group by OrderID, Quantity having count(*)>1)
 select OrderID, ProductID, UnitPrice, Quantity, Discount from OrderDetails 
 where OrderID in (select OrderID from PotDup) order by OrderID, Quantity
@@ -85,8 +76,8 @@ where OrderID in (select OrderID from PotDup) order by OrderID, Quantity
 
 --40
 select OrderDetails.OrderID, ProductID, UnitPrice, Quantity, Discount from OrderDetails
-join(select	distinct OrderID from OrderDetails where Quantity >= 60
-group by OrderID, Quantity having count(*) > 1) PotentialProblemOrders on PotentialProblemOrders.OrderID =	OrderDetails.OrderID
+join(select distinct OrderID from OrderDetails where Quantity >= 60
+group by OrderID, Quantity having count(*) > 1) PotentialProblemOrders on PotentialProblemOrders.OrderID = OrderDetails.OrderID 
 order by OrderID, ProductID
 
 
@@ -94,16 +85,16 @@ order by OrderID, ProductID
 
 
  --41
-select OrderID, OrderDate = convert(date, OrderDate), RequiredDate = convert(date,	RequiredDate), ShippedDate = convert(date, ShippedDate)
+select OrderID, OrderDate = convert(date, OrderDate), RequiredDate = convert(date, RequiredDate), ShippedDate = convert(date, ShippedDate) 
 from Orders where RequiredDate <= ShippedDate
 
 
 
 
  --42
-select Employees.EmployeeID, LastName, TotalLateOrders	=	count(*) from	Orders
-Join Employees on Employees.EmployeeID = Orders.EmployeeID
-where RequiredDate <= ShippedDate group	by Employees.EmployeeID, Employees.LastName
+select Employees.EmployeeID, LastName, TotalLateOrders	= count(*) from	Orders 
+join Employees on Employees.EmployeeID = Orders.EmployeeID 
+where RequiredDate <= ShippedDate group	by Employees.EmployeeID, Employees.LastName 
 order by TotalLateOrders desc
 
 
@@ -111,11 +102,11 @@ order by TotalLateOrders desc
 
 
  --43
-;with LateOrders as (select EmployeeID, TotalOrders	= count(*)	from Orders 
-where RequiredDate <= ShippedDate group	by EmployeeID), AllOrders as(
-select	EmployeeID,TotalOrders = count(*) from Orders 
-group By EmployeeID) select Employees.EmployeeID, LastName, AllOrders = AllOrders.TotalOrders, LateOrders =
-LateOrders.TotalOrders	from Employees join AllOrders	on AllOrders.EmployeeID = Employees.EmployeeID
+;with LateOrders as 
+(select EmployeeID, TotalOrders	= count(*) from Orders where RequiredDate <= ShippedDate group by EmployeeID), AllOrders as(
+select	EmployeeID,TotalOrders = count(*) from Orders group By EmployeeID) 
+select Employees.EmployeeID, LastName, AllOrders = AllOrders.TotalOrders, LateOrders =
+LateOrders.TotalOrders from Employees join AllOrders on AllOrders.EmployeeID = Employees.EmployeeID
 join LateOrders	on LateOrders.EmployeeID = Employees.EmployeeID
 
 
@@ -123,24 +114,22 @@ join LateOrders	on LateOrders.EmployeeID = Employees.EmployeeID
 
 
  --44
-;with LateOrders as	(
-select EmployeeID, TotalOrders	= count(*) from Orders where RequiredDate <= ShippedDate	
-group by EmployeeID), AllOrders	as (
-select EmployeeID, TotalOrders	= count(*) from	Orders group by EmployeeID)	
-select Employees.EmployeeID, LastName, AllOrders =	AllOrders.TotalOrders, LateOrders = LateOrders.TotalOrders
-from Employees join	AllOrders on AllOrders.EmployeeID = Employees.EmployeeID
+;with LateOrders as (
+select EmployeeID, TotalOrders = count(*) from Orders where RequiredDate <= ShippedDate	
+group by EmployeeID), AllOrders	as (select EmployeeID, TotalOrders = count(*) from	Orders group by EmployeeID)	
+select Employees.EmployeeID, LastName, AllOrders = AllOrders.TotalOrders, LateOrders = LateOrders.TotalOrders
+from Employees join AllOrders on AllOrders.EmployeeID = Employees.EmployeeID
 left join LateOrders on LateOrders.EmployeeID = Employees.EmployeeID
 
 
 
 
  --45
-;with LateOrders as (select EmployeeID, TotalOrders = count(*) from	Orders 
-where RequiredDate <= ShippedDate group by EmployeeID), AllOrders as (
+;with LateOrders as 
+(select EmployeeID, TotalOrders = count(*) from	Orders where RequiredDate <= ShippedDate group by EmployeeID), AllOrders as (
 select EmployeeID, TotalOrders = count(*) from Orders group by EmployeeID)
-select Employees.EmployeeID, LastName, AllOrders = AllOrders.TotalOrders, LateOrders =
-isnull(LateOrders.TotalOrders,	0)	from Employees	join AllOrders	on
-AllOrders.EmployeeID =	Employees.EmployeeID
+select Employees.EmployeeID, LastName, AllOrders = AllOrders.TotalOrders, LateOrders = isnull(LateOrders.TotalOrders, 0) 
+from Employees join AllOrders on AllOrders.EmployeeID =	Employees.EmployeeID
 left join LateOrders on	LateOrders.EmployeeID =	Employees.EmployeeID
 
 
@@ -148,15 +137,14 @@ left join LateOrders on	LateOrders.EmployeeID =	Employees.EmployeeID
 
 
  --46
-;with LateOrders as	(
-select	EmployeeID, TotalOrders	= count(*) from	Orders	
-where RequiredDate	<= ShippedDate	group by EmployeeID), AllOrders as (
-select EmployeeID, TotalOrders	=	count(*) from Orders	group by EmployeeID)
+;with LateOrders as
+(select	EmployeeID, TotalOrders	= count(*) from	Orders where RequiredDate <= ShippedDate group by EmployeeID), AllOrders as (
+select EmployeeID, TotalOrders = count(*) from Orders group by EmployeeID)
 select Employees.EmployeeID, LastName, AllOrders = AllOrders.TotalOrders, LateOrders =
-isnull(LateOrders.TotalOrders,	0), PercentLateOrders =
-(isnull(LateOrders.TotalOrders,	0) * 1.00) / AllOrders.TotalOrders	from
+isnull(LateOrders.TotalOrders,	0), 
+PercentLateOrders = (isnull(LateOrders.TotalOrders, 0) * 1.00) / AllOrders.TotalOrders from 
 Employees join AllOrders on AllOrders.EmployeeID = Employees.EmployeeID
-left join LateOrders	on	LateOrders.EmployeeID	=	Employees.EmployeeID
+left join LateOrders on LateOrders.EmployeeID = Employees.EmployeeID
 
 
 
